@@ -11,6 +11,7 @@ from transformers.loss.loss_utils import (
     ForTokenClassification,
 )
 
+from axolotl.core.trainers import base as base_module
 from axolotl.core.trainers.base import model_loss_accepts_num_items_in_batch
 
 
@@ -101,8 +102,20 @@ class TestDetection:
 
         assert model_loss_accepts_num_items_in_batch(Model()) is True
 
-    def test_uninspectable_loss_left_alone(self):
+    @pytest.mark.parametrize("exc", [ValueError, TypeError])
+    def test_uninspectable_loss_left_alone(self, monkeypatch, exc):
+        """The fallback for a callable whose signature cannot be retrieved.
+
+        Which builtins expose a signature varies by CPython version, so rather
+        than pick one and hope, force the failure the fallback exists for.
+        """
+
+        def raises(*_args, **_kwargs):
+            raise exc("no signature found")
+
+        monkeypatch.setattr(base_module.inspect, "signature", raises)
+
         class Model:
-            loss_function = print  # builtin, no retrievable signature
+            loss_function = staticmethod(ForCausalLMLoss)
 
         assert model_loss_accepts_num_items_in_batch(Model()) is True
