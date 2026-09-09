@@ -20,7 +20,7 @@ COMPLETION = " Paris."
 
 @fixture()
 def tokenizer():
-    tokenizer_ = AutoTokenizer.from_pretrained(MODEL_NAME, trust_remote_code=True)
+    tokenizer_ = AutoTokenizer.from_pretrained(MODEL_NAME)
     tokenizer_.add_special_tokens({"pad_token": "<|endoftext|>"})
     # generation pads on the left, which is what makes the prompt prefix in the
     # generated rows wider than the individual prompts
@@ -30,9 +30,7 @@ def tokenizer():
 
 @fixture()
 def model():
-    model_ = AutoModelForCausalLM.from_pretrained(
-        MODEL_NAME, trust_remote_code=True, dtype="float32"
-    )
+    model_ = AutoModelForCausalLM.from_pretrained(MODEL_NAME, dtype="float32")
     model_.eval()
     return model_
 
